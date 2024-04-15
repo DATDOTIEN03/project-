@@ -1,5 +1,39 @@
-name: datdotien
-  on:
-    push:
-      branches:
-        - main
+name: Publish Expo App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    name: Install and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      
+      - name: Expo Publish
+        uses: expo/expo-github-action@v5
+        with:
+          expo-version: 3.x
+          expo-username: ${{ secrets.EXPO_CLI_USERNAME }}
+          expo-password: ${{ secrets.EXPO_CLI_PASSWORD }}
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Expo Build
+        run: expo --release-channel=pro2
+      
+      - name: Comment on Pull Request
+        uses: unsplash/comment-on-pr@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.EXPO_CLI_GIT_TOKEN }}
+        with:
+          msg: App is ready for review, you can [see it here](https://expo.io/@bycedric/use-expo?release-channel=pro2).
